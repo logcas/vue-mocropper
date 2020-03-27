@@ -1,0 +1,42 @@
+{
+  "name": "vue-mocropper",
+  "version": "0.0.1",
+  "description": "Vue Image Cropper for mobile",
+  "main": "./dist/mocropper.min.js",
+  "scripts": {
+    "build": "webpack --config=webpack.config.js"
+  },
+  "bugs": {
+    "url": "https://github.com/logcas/vue-mocropper/issues",
+    "email": "everlastlucas@outlook.com"
+  },
+  "keywords": [
+    "vue",
+    "cropper"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/logcas/vue-mocropper.git"
+  },
+  "author": "Lucas <everlastlucas@outlook.com> (https://github.com/logcas)",
+  "license": "MIT",
+  "dependencies": {
+    "alloyfinger": "^0.1.16"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.0",
+    "babel-loader": "^8.1.0",
+    "css-loader": "^3.4.2",
+    "sass-loader": "^8.0.2",
+    "style-loader": "^1.1.3",
+    "terser-webpack-plugin": "^2.3.5",
+    "vue-loader": "^15.9.1",
+    "vue-template-compiler": "^2.6.11",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.10.3",
+    "node-sass": "^4.13.1"
+  },
+  "sideEffects": false
+}
