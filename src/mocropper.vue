@@ -18,8 +18,8 @@
     <!-- 插槽，可自定义按钮等内容 -->
     <slot :cancel="cancel" :crop="cropImage">
       <div class="menu">
-        <button class="menu_button cancel" @click="cancel">取消</button>
-        <button class="menu_button confirm" @click="cropImage">裁剪</button>
+        <button class="menu_button cancel" @click="cancel">{{ cancelText }}</button>
+        <button class="menu_button confirm" @click="cropImage">{{ confirmText }}</button>
       </div>
     </slot>
   </div>
@@ -79,6 +79,16 @@ export default {
     showMask: {
       type: Boolean,
       default: true
+    },
+    // 默认插槽取消按钮文本
+    cancelText: {
+      type: String,
+      default: '取消'
+    },
+    // 默认插槽确认按钮文本
+    confirmText: {
+      type: String,
+      default: '裁剪'
     }
   },
   data() {

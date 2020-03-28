@@ -218,7 +218,7 @@ var render = function() {
             _c(
               "button",
               { staticClass: "menu_button cancel", on: { click: _vm.cancel } },
-              [_vm._v("取消")]
+              [_vm._v(_vm._s(_vm.cancelText))]
             ),
             _vm._v(" "),
             _c(
@@ -227,7 +227,7 @@ var render = function() {
                 staticClass: "menu_button confirm",
                 on: { click: _vm.cropImage }
               },
-              [_vm._v("裁剪")]
+              [_vm._v(_vm._s(_vm.confirmText))]
             )
           ])
         ],
@@ -338,6 +338,16 @@ var getPixelRatio = function getPixelRatio(context) {
     showMask: {
       type: Boolean,
       "default": true
+    },
+    // 默认插槽取消按钮文本
+    cancelText: {
+      type: String,
+      "default": '取消'
+    },
+    // 默认插槽确认按钮文本
+    confirmText: {
+      type: String,
+      "default": '裁剪'
     }
   },
   data: function data() {
