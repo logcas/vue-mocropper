@@ -6,6 +6,7 @@
   "scripts": {
     "build": "webpack --config=webpack.config.js"
   },
+  "private": false,
   "bugs": {
     "url": "https://github.com/logcas/vue-mocropper/issues",
     "email": "everlastlucas@outlook.com"
