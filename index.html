@@ -104,6 +104,8 @@ button:active {
       @crop-done="handleCropDone"
       :crop-width="+cropWidth"
       :crop-height="+cropHeight"
+      cancel-text="Cancel"
+      confirm-text="Crop"
     ></vue-mocropper>
     <h2 v-show="croppedImage">Output:</h2>
     <div v-show="croppedImage" class="block" style="text-align: center;">
