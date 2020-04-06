@@ -7,10 +7,18 @@
     <div class="mask" v-if="showMask"></div>
 
     <!-- 裁剪Canvas -->
-    <canvas class="cropper" ref="cCanvas" :style="{
-      width: cropWidth + 'px',
-      height: cropHeight + 'px'
-    }"></canvas>
+    <div class="cropper-wrapper" :style="{
+        top: topY + 'px',
+        left: topX + 'px',
+        width: cropperWidth + 'px',
+        height: cropperHeight + 'px'
+      }">
+      <canvas class="cropper" ref="cCanvas"></canvas>
+      <div class="cropper-angle top-left" v-show="resizable"></div>
+      <div class="cropper-angle top-right" v-show="resizable"></div>
+      <div class="cropper-angle bottom-left" v-show="resizable"></div>
+      <div class="cropper-angle bottom-right" v-show="resizable"></div>
+    </div>
     
     <!-- 手势接收层 -->
     <div class="gesture-layer" ref="gesture" @touchmove.prevent="void 0"></div>
@@ -35,6 +43,12 @@ const getPixelRatio = function (context) {
     context.oBackingStorePixelRatio ||
     context.backingStorePixelRatio || 1;
   return (window.devicePixelRatio || 1) / backingStore;
+};
+const ANGLE_POS = {
+  TL: 'top-left',
+  TR: 'top-right',
+  BL: 'bottom-left',
+  BR: 'bottom-right'
 };
 export default {
   name: 'vue-mocropper',
@@ -67,7 +81,7 @@ export default {
     // 裁剪图片质量
     outputQuality: {
       type: Number,
-      default: 0.8
+      default: 1
     },
     // 输入的类型
     // base64 或者 Blob
@@ -89,6 +103,11 @@ export default {
     confirmText: {
       type: String,
       default: '裁剪'
+    },
+    // 是否可自动控制裁剪区尺寸
+    resizable: {
+      type: Boolean,
+      default: true
     }
   },
   data() {
@@ -112,6 +131,14 @@ export default {
       sY: null,
       // 缩放比率
       ratio: 1,
+
+      // cropper 坐标
+      topX: 0,
+      topY: 0,
+      cropperWidth: this.cropWidth,
+      cropperHeight: this.cropHeight,
+      resizingCropper: false,
+      movingCropper: false,
     };
   },
   watch: {
@@ -145,8 +172,91 @@ export default {
       this.ratio = getPixelRatio(this.cCtx);
       this.$refs.pCanvas.width = window.innerWidth * this.ratio;
       this.$refs.pCanvas.height = window.innerHeight * this.ratio;
-      this.$refs.cCanvas.width = this.cropWidth * this.ratio;
-      this.$refs.cCanvas.height = this.cropHeight * this.ratio;
+      this._setcCanvasRect();
+      this._getCropperInitialPosition();
+    },
+    // 动态设置裁剪Canvas的尺寸
+    _setcCanvasRect() {
+      this.$refs.cCanvas.width = this.cropperWidth * this.ratio;
+      this.$refs.cCanvas.height = this.cropperHeight * this.ratio;
+    },
+    // 获取裁剪区初始坐标（垂直水平居中）
+    _getCropperInitialPosition() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      this.topX = width / 2 - this.cropperWidth / 2;
+      this.topY = height / 2 - this.cropperHeight / 2;
+    },
+    // 判断手指是否在裁剪区
+    _isInCropperArea(x, y) {
+      return x >= this.topX 
+          && x <= this.topX + this.cropperWidth
+          && y >= this.topY
+          && y <= this.topY + this.cropperHeight;
+    },
+    // 判断手指是否在裁剪区四角
+    _isInCropperAngle(x, y) {
+      const CROPPER_ANGLE_WIDTH = 15;
+      const CROPPER_ANGLE_HEIGHT = 15;
+      // 允许的偏差
+      const REDUNDANCY = 10; 
+      // 左上角
+      if (x >= this.topX - REDUNDANCY
+        && x <= this.topX + CROPPER_ANGLE_WIDTH + REDUNDANCY
+        && y >= this.topY - REDUNDANCY
+        && y <= this.topY + CROPPER_ANGLE_HEIGHT + REDUNDANCY) {
+        return ANGLE_POS.TL;
+      }
+      // 右上角
+      if (x >= this.topX + this.cropperWidth - (CROPPER_ANGLE_WIDTH / 2) - REDUNDANCY
+        && x <= this.topX + this.cropperWidth + (CROPPER_ANGLE_WIDTH / 2) + REDUNDANCY
+        && y >= this.topY - REDUNDANCY
+        && y <= this.topY + CROPPER_ANGLE_HEIGHT + REDUNDANCY) {
+        return ANGLE_POS.TR;
+      }
+      // 左下角
+      if (x >= this.topX - REDUNDANCY
+        && x <= this.topX + CROPPER_ANGLE_WIDTH + REDUNDANCY
+        && y >= this.topY + this.cropperHeight - (CROPPER_ANGLE_HEIGHT / 2) - REDUNDANCY
+        && y <= this.topY + this.cropperHeight - (CROPPER_ANGLE_HEIGHT / 2) + REDUNDANCY) {
+        return ANGLE_POS.BL;
+      }
+      // 右下角
+      if (x >= this.topX + this.cropperWidth - (CROPPER_ANGLE_WIDTH / 2) - REDUNDANCY
+        && x <= this.topX + this.cropperWidth + (CROPPER_ANGLE_WIDTH / 2) + REDUNDANCY
+        && y >= this.topY + this.cropperHeight - (CROPPER_ANGLE_HEIGHT / 2) - REDUNDANCY
+        && y <= this.topY + this.cropperHeight - (CROPPER_ANGLE_HEIGHT / 2) + REDUNDANCY) {
+        return ANGLE_POS.BR;
+      }
+      return false;
+    },
+    // 改变裁剪区大小
+    _resizeCropper(deltaX, deltaY) {
+      const POS = this.resizingCropper;
+      switch(POS) {
+        case ANGLE_POS.TL:
+          this.topX += deltaX;
+          this.topY += deltaY;
+          this.cropperWidth -= deltaX;
+          this.cropperHeight -= deltaY;
+          break;
+        case ANGLE_POS.TR:
+          this.topY += deltaY;
+          this.cropperWidth += deltaX;
+          this.cropperHeight -= deltaY;
+          break;
+        case ANGLE_POS.BL:
+          this.topX += deltaX;
+          this.cropperWidth -= deltaX;
+          this.cropperHeight += deltaY;
+          break;
+        case ANGLE_POS.BR:
+          this.cropperWidth += deltaX;
+          this.cropperHeight += deltaY;
+          break;
+      }
+      this._setcCanvasRect();
+      this._drawCanvas();
     },
     // 检测手势是否在合法区域
     isInLegalArea(x, y) {
@@ -158,6 +268,20 @@ export default {
         return true;
       }
       return false;
+    },
+    // 移动裁剪区
+    _moveCropper(deltaX, deltaY) {
+      let change = false;
+      // 先校验，不允许超出屏幕范围
+      if (this.topX + deltaX >= 0 && this.topX + deltaX + this.cropperWidth <= window.innerWidth) {
+        this.topX += deltaX;
+        change = true;
+      }
+      if (this.topY + deltaY >= 0 && this.topY + deltaY + this.cropperHeight <= window.innerHeight) {
+        this.topY += deltaY;
+        change = true;
+      }
+      change && this._drawCanvas();
     },
     // 调整图像大小
     _adjustImageSize() {
@@ -217,6 +341,9 @@ export default {
         this._getStartPoint();
       }
 
+      const cSy = this.topY;
+      const cSx = this.topX;
+
       resizedWidth = resizedWidth || this.currentWidth;
       resizedHeight = resizedHeight || this.currentHeight;
 
@@ -224,8 +351,7 @@ export default {
       pCtx.fillRect(0, 0, pCanvas.width, pCanvas.height);
       pCtx.drawImage(this.image, 0, 0, this.initWidth, this.initHeight, this.sX * ratio, this.sY * ratio, resizedWidth * ratio, resizedHeight * ratio);
       
-      const { top: cSy, left: cSx } = this.$refs.cCanvas.getBoundingClientRect();
-      cCtx.drawImage(this.$refs.pCanvas, cSx * ratio, cSy * ratio, this.cropWidth * ratio, this.cropHeight * ratio, 0, 0, this.cropWidth * ratio, this.cropHeight * ratio);
+      cCtx.drawImage(this.$refs.pCanvas, cSx * ratio, cSy * ratio, this.cropperWidth * ratio, this.cropperHeight * ratio, 0, 0, this.cropperWidth * ratio, this.cropperHeight * ratio);
     },
     // 裁剪
     cropImage() {
@@ -270,6 +396,14 @@ export default {
     let af = new AlloyFinger(this.$refs.gesture, {
       pressMove: evt => {
         const { clientX, clientY } = evt.touches[0];
+        // 调整裁剪区尺寸
+        if (this.resizingCropper) {
+          return this._resizeCropper(evt.deltaX, evt.deltaY);
+        }
+        // 移动裁剪区
+        if (this.movingCropper) {
+          return this._moveCropper(evt.deltaX, evt.deltaY);
+        }
         if (!this.isInLegalArea(clientX, clientY)) {
           return;
         }
@@ -289,9 +423,17 @@ export default {
         this.resizedHeight = resizedHeight;
         this._drawCanvas(this.resizedWidth, this.resizedHeight);
       },
+      touchStart: evt => {
+        const x = evt.touches[0].clientX;
+        const y = evt.touches[0].clientY;
+        this.resizingCropper = this.resizable && this._isInCropperAngle(x, y);
+        this.movingCropper = this._isInCropperArea(x, y);
+      },
       touchEnd: evt => {
         this.currentWidth = this.resizedWidth;
         this.currentHeight = this.resizedHeight;
+        this.resizingCropper = false;
+        this.movingCropper = false;
       }
     });
     this.$on('hook:beforeDestory', () => {
@@ -327,12 +469,53 @@ export default {
     height: 100%;
   }
 
-  .cropper {
+  .cropper-wrapper {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    // top: 50%;
+    // left: 50%;
+    // transform: translate(-50%, -50%);
     border: 1px solid rgb(231, 231, 231);
+
+    .cropper {
+      width: 100%;
+      height: 100%;
+    }
+
+    .cropper-angle {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      border: 3px solid #fff;
+      opacity: 0.8;
+
+      &.top-left {
+        top: -3px;
+        left: -3px;
+        border-right: none;
+        border-bottom: none;
+      }
+
+      &.top-right {
+        top: -3px;
+        right: -3px;
+        border-left: none;
+        border-bottom: none;
+      }
+
+      &.bottom-left {
+        bottom: -3px;
+        left: -3px;
+        border-right: none;
+        border-top: none;
+      }
+
+      &.bottom-right {
+        bottom: -3px;
+        right: -3px;
+        border-left: none;
+        border-top: none;
+      }
+    }
   }
 
   .gesture-layer {
