@@ -191,14 +191,69 @@ var render = function() {
       _vm._v(" "),
       _vm.showMask ? _c("div", { staticClass: "mask" }) : _vm._e(),
       _vm._v(" "),
-      _c("canvas", {
-        ref: "cCanvas",
-        staticClass: "cropper",
-        style: {
-          width: _vm.cropWidth + "px",
-          height: _vm.cropHeight + "px"
-        }
-      }),
+      _c(
+        "div",
+        {
+          staticClass: "cropper-wrapper",
+          style: {
+            top: _vm.topY + "px",
+            left: _vm.topX + "px",
+            width: _vm.cropperWidth + "px",
+            height: _vm.cropperHeight + "px"
+          }
+        },
+        [
+          _c("canvas", { ref: "cCanvas", staticClass: "cropper" }),
+          _vm._v(" "),
+          _c("div", {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.resizable,
+                expression: "resizable"
+              }
+            ],
+            staticClass: "cropper-angle top-left"
+          }),
+          _vm._v(" "),
+          _c("div", {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.resizable,
+                expression: "resizable"
+              }
+            ],
+            staticClass: "cropper-angle top-right"
+          }),
+          _vm._v(" "),
+          _c("div", {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.resizable,
+                expression: "resizable"
+              }
+            ],
+            staticClass: "cropper-angle bottom-left"
+          }),
+          _vm._v(" "),
+          _c("div", {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.resizable,
+                expression: "resizable"
+              }
+            ],
+            staticClass: "cropper-angle bottom-right"
+          })
+        ]
+      ),
       _vm._v(" "),
       _c("div", {
         ref: "gesture",
@@ -288,6 +343,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 var getPixelRatio = function getPixelRatio(context) {
@@ -295,6 +358,12 @@ var getPixelRatio = function getPixelRatio(context) {
   return (window.devicePixelRatio || 1) / backingStore;
 };
 
+var ANGLE_POS = {
+  TL: 'top-left',
+  TR: 'top-right',
+  BL: 'bottom-left',
+  BR: 'bottom-right'
+};
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: 'vue-mocropper',
   props: {
@@ -326,7 +395,7 @@ var getPixelRatio = function getPixelRatio(context) {
     // 裁剪图片质量
     outputQuality: {
       type: Number,
-      "default": 0.8
+      "default": 1
     },
     // 输入的类型
     // base64 或者 Blob
@@ -348,6 +417,11 @@ var getPixelRatio = function getPixelRatio(context) {
     confirmText: {
       type: String,
       "default": '裁剪'
+    },
+    // 是否可自动控制裁剪区尺寸
+    resizable: {
+      type: Boolean,
+      "default": true
     }
   },
   data: function data() {
@@ -370,7 +444,14 @@ var getPixelRatio = function getPixelRatio(context) {
       sX: null,
       sY: null,
       // 缩放比率
-      ratio: 1
+      ratio: 1,
+      // cropper 坐标
+      topX: 0,
+      topY: 0,
+      cropperWidth: this.cropWidth,
+      cropperHeight: this.cropHeight,
+      resizingCropper: false,
+      movingCropper: false
     };
   },
   watch: {
@@ -406,8 +487,88 @@ var getPixelRatio = function getPixelRatio(context) {
       this.ratio = getPixelRatio(this.cCtx);
       this.$refs.pCanvas.width = window.innerWidth * this.ratio;
       this.$refs.pCanvas.height = window.innerHeight * this.ratio;
-      this.$refs.cCanvas.width = this.cropWidth * this.ratio;
-      this.$refs.cCanvas.height = this.cropHeight * this.ratio;
+
+      this._setcCanvasRect();
+
+      this._getCropperInitialPosition();
+    },
+    // 动态设置裁剪Canvas的尺寸
+    _setcCanvasRect: function _setcCanvasRect() {
+      this.$refs.cCanvas.width = this.cropperWidth * this.ratio;
+      this.$refs.cCanvas.height = this.cropperHeight * this.ratio;
+    },
+    // 获取裁剪区初始坐标（垂直水平居中）
+    _getCropperInitialPosition: function _getCropperInitialPosition() {
+      var width = window.innerWidth;
+      var height = window.innerHeight;
+      this.topX = width / 2 - this.cropperWidth / 2;
+      this.topY = height / 2 - this.cropperHeight / 2;
+    },
+    // 判断手指是否在裁剪区
+    _isInCropperArea: function _isInCropperArea(x, y) {
+      return x >= this.topX && x <= this.topX + this.cropperWidth && y >= this.topY && y <= this.topY + this.cropperHeight;
+    },
+    // 判断手指是否在裁剪区四角
+    _isInCropperAngle: function _isInCropperAngle(x, y) {
+      var CROPPER_ANGLE_WIDTH = 15;
+      var CROPPER_ANGLE_HEIGHT = 15; // 允许的偏差
+
+      var REDUNDANCY = 10; // 左上角
+
+      if (x >= this.topX - REDUNDANCY && x <= this.topX + CROPPER_ANGLE_WIDTH + REDUNDANCY && y >= this.topY - REDUNDANCY && y <= this.topY + CROPPER_ANGLE_HEIGHT + REDUNDANCY) {
+        return ANGLE_POS.TL;
+      } // 右上角
+
+
+      if (x >= this.topX + this.cropperWidth - CROPPER_ANGLE_WIDTH / 2 - REDUNDANCY && x <= this.topX + this.cropperWidth + CROPPER_ANGLE_WIDTH / 2 + REDUNDANCY && y >= this.topY - REDUNDANCY && y <= this.topY + CROPPER_ANGLE_HEIGHT + REDUNDANCY) {
+        return ANGLE_POS.TR;
+      } // 左下角
+
+
+      if (x >= this.topX - REDUNDANCY && x <= this.topX + CROPPER_ANGLE_WIDTH + REDUNDANCY && y >= this.topY + this.cropperHeight - CROPPER_ANGLE_HEIGHT / 2 - REDUNDANCY && y <= this.topY + this.cropperHeight - CROPPER_ANGLE_HEIGHT / 2 + REDUNDANCY) {
+        return ANGLE_POS.BL;
+      } // 右下角
+
+
+      if (x >= this.topX + this.cropperWidth - CROPPER_ANGLE_WIDTH / 2 - REDUNDANCY && x <= this.topX + this.cropperWidth + CROPPER_ANGLE_WIDTH / 2 + REDUNDANCY && y >= this.topY + this.cropperHeight - CROPPER_ANGLE_HEIGHT / 2 - REDUNDANCY && y <= this.topY + this.cropperHeight - CROPPER_ANGLE_HEIGHT / 2 + REDUNDANCY) {
+        return ANGLE_POS.BR;
+      }
+
+      return false;
+    },
+    // 改变裁剪区大小
+    _resizeCropper: function _resizeCropper(deltaX, deltaY) {
+      var POS = this.resizingCropper;
+
+      switch (POS) {
+        case ANGLE_POS.TL:
+          this.topX += deltaX;
+          this.topY += deltaY;
+          this.cropperWidth -= deltaX;
+          this.cropperHeight -= deltaY;
+          break;
+
+        case ANGLE_POS.TR:
+          this.topY += deltaY;
+          this.cropperWidth += deltaX;
+          this.cropperHeight -= deltaY;
+          break;
+
+        case ANGLE_POS.BL:
+          this.topX += deltaX;
+          this.cropperWidth -= deltaX;
+          this.cropperHeight += deltaY;
+          break;
+
+        case ANGLE_POS.BR:
+          this.cropperWidth += deltaX;
+          this.cropperHeight += deltaY;
+          break;
+      }
+
+      this._setcCanvasRect();
+
+      this._drawCanvas();
     },
     // 检测手势是否在合法区域
     isInLegalArea: function isInLegalArea(x, y) {
@@ -416,6 +577,22 @@ var getPixelRatio = function getPixelRatio(context) {
       }
 
       return false;
+    },
+    // 移动裁剪区
+    _moveCropper: function _moveCropper(deltaX, deltaY) {
+      var change = false; // 先校验，不允许超出屏幕范围
+
+      if (this.topX + deltaX >= 0 && this.topX + deltaX + this.cropperWidth <= window.innerWidth) {
+        this.topX += deltaX;
+        change = true;
+      }
+
+      if (this.topY + deltaY >= 0 && this.topY + deltaY + this.cropperHeight <= window.innerHeight) {
+        this.topY += deltaY;
+        change = true;
+      }
+
+      change && this._drawCanvas();
     },
     // 调整图像大小
     _adjustImageSize: function _adjustImageSize() {
@@ -486,17 +663,14 @@ var getPixelRatio = function getPixelRatio(context) {
         this._getStartPoint();
       }
 
+      var cSy = this.topY;
+      var cSx = this.topX;
       resizedWidth = resizedWidth || this.currentWidth;
       resizedHeight = resizedHeight || this.currentHeight;
       pCtx.fillStyle = '#000';
       pCtx.fillRect(0, 0, pCanvas.width, pCanvas.height);
       pCtx.drawImage(this.image, 0, 0, this.initWidth, this.initHeight, this.sX * ratio, this.sY * ratio, resizedWidth * ratio, resizedHeight * ratio);
-
-      var _this$$refs$cCanvas$g = this.$refs.cCanvas.getBoundingClientRect(),
-          cSy = _this$$refs$cCanvas$g.top,
-          cSx = _this$$refs$cCanvas$g.left;
-
-      cCtx.drawImage(this.$refs.pCanvas, cSx * ratio, cSy * ratio, this.cropWidth * ratio, this.cropHeight * ratio, 0, 0, this.cropWidth * ratio, this.cropHeight * ratio);
+      cCtx.drawImage(this.$refs.pCanvas, cSx * ratio, cSy * ratio, this.cropperWidth * ratio, this.cropperHeight * ratio, 0, 0, this.cropperWidth * ratio, this.cropperHeight * ratio);
     },
     // 裁剪
     cropImage: function cropImage() {
@@ -552,7 +726,16 @@ var getPixelRatio = function getPixelRatio(context) {
       pressMove: function pressMove(evt) {
         var _evt$touches$ = evt.touches[0],
             clientX = _evt$touches$.clientX,
-            clientY = _evt$touches$.clientY;
+            clientY = _evt$touches$.clientY; // 调整裁剪区尺寸
+
+        if (_this3.resizingCropper) {
+          return _this3._resizeCropper(evt.deltaX, evt.deltaY);
+        } // 移动裁剪区
+
+
+        if (_this3.movingCropper) {
+          return _this3._moveCropper(evt.deltaX, evt.deltaY);
+        }
 
         if (!_this3.isInLegalArea(clientX, clientY)) {
           return;
@@ -578,9 +761,17 @@ var getPixelRatio = function getPixelRatio(context) {
 
         _this3._drawCanvas(_this3.resizedWidth, _this3.resizedHeight);
       },
+      touchStart: function touchStart(evt) {
+        var x = evt.touches[0].clientX;
+        var y = evt.touches[0].clientY;
+        _this3.resizingCropper = _this3.resizable && _this3._isInCropperAngle(x, y);
+        _this3.movingCropper = _this3._isInCropperArea(x, y);
+      },
       touchEnd: function touchEnd(evt) {
         _this3.currentWidth = _this3.resizedWidth;
         _this3.currentHeight = _this3.resizedHeight;
+        _this3.resizingCropper = false;
+        _this3.movingCropper = false;
       }
     });
     this.$on('hook:beforeDestory', function () {
@@ -1250,7 +1441,7 @@ module.exports = function (list, options) {
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(11);
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, ".cutout[data-v-1a7c0ba2] {\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 9999;\n  background: #000;\n}\n.cutout .mask[data-v-1a7c0ba2] {\n    position: absolute;\n    top: 0;\n    left: 0;\n    bottom: 0;\n    right: 0;\n    background: rgba(0, 0, 0, 0.4);\n}\n.cutout .previewer[data-v-1a7c0ba2] {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n}\n.cutout .cropper[data-v-1a7c0ba2] {\n    position: absolute;\n    top: 50%;\n    left: 50%;\n    transform: translate(-50%, -50%);\n    border: 1px solid #e7e7e7;\n}\n.cutout .gesture-layer[data-v-1a7c0ba2] {\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n}\n.cutout .menu[data-v-1a7c0ba2] {\n    position: absolute;\n    bottom: 0;\n    left: 0;\n    width: 100%;\n    height: 50px;\n    display: flex;\n    justify-content: space-around;\n    align-items: center;\n    user-select: none;\n    background-color: rgba(255, 255, 255, 0.2);\n}\n.cutout .menu_button[data-v-1a7c0ba2] {\n      font-size: 20px;\n      padding: 5px 15px;\n      appearance: none;\n      outline: none;\n      border: none;\n      background: transparent;\n      color: #fff;\n}\n.cutout .menu_button.confirm[data-v-1a7c0ba2] {\n        color: #f77f7f;\n}\n.cutout .menu_button[data-v-1a7c0ba2]:active {\n        opacity: 0.5;\n}\n", ""]);
+exports.push([module.i, ".cutout[data-v-1a7c0ba2] {\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  z-index: 9999;\n  background: #000;\n}\n.cutout .mask[data-v-1a7c0ba2] {\n    position: absolute;\n    top: 0;\n    left: 0;\n    bottom: 0;\n    right: 0;\n    background: rgba(0, 0, 0, 0.4);\n}\n.cutout .previewer[data-v-1a7c0ba2] {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n}\n.cutout .cropper-wrapper[data-v-1a7c0ba2] {\n    position: absolute;\n    border: 1px solid #e7e7e7;\n}\n.cutout .cropper-wrapper .cropper[data-v-1a7c0ba2] {\n      width: 100%;\n      height: 100%;\n}\n.cutout .cropper-wrapper .cropper-angle[data-v-1a7c0ba2] {\n      position: absolute;\n      width: 15px;\n      height: 15px;\n      border: 3px solid #fff;\n      opacity: 0.8;\n}\n.cutout .cropper-wrapper .cropper-angle.top-left[data-v-1a7c0ba2] {\n        top: -3px;\n        left: -3px;\n        border-right: none;\n        border-bottom: none;\n}\n.cutout .cropper-wrapper .cropper-angle.top-right[data-v-1a7c0ba2] {\n        top: -3px;\n        right: -3px;\n        border-left: none;\n        border-bottom: none;\n}\n.cutout .cropper-wrapper .cropper-angle.bottom-left[data-v-1a7c0ba2] {\n        bottom: -3px;\n        left: -3px;\n        border-right: none;\n        border-top: none;\n}\n.cutout .cropper-wrapper .cropper-angle.bottom-right[data-v-1a7c0ba2] {\n        bottom: -3px;\n        right: -3px;\n        border-left: none;\n        border-top: none;\n}\n.cutout .gesture-layer[data-v-1a7c0ba2] {\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n}\n.cutout .menu[data-v-1a7c0ba2] {\n    position: absolute;\n    bottom: 0;\n    left: 0;\n    width: 100%;\n    height: 50px;\n    display: flex;\n    justify-content: space-around;\n    align-items: center;\n    user-select: none;\n    background-color: rgba(255, 255, 255, 0.2);\n}\n.cutout .menu_button[data-v-1a7c0ba2] {\n      font-size: 20px;\n      padding: 5px 15px;\n      appearance: none;\n      outline: none;\n      border: none;\n      background: transparent;\n      color: #fff;\n}\n.cutout .menu_button.confirm[data-v-1a7c0ba2] {\n        color: #f77f7f;\n}\n.cutout .menu_button[data-v-1a7c0ba2]:active {\n        opacity: 0.5;\n}\n", ""]);
 // Exports
 module.exports = exports;
 

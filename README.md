@@ -42,6 +42,7 @@ Vue.use(VueMoCropper);
 |outputMime|输出的图像的Mime类型|`images/jpeg`|
 |outputQuality|输出图片的质量，(0, 1]|`0.8`|
 |outputType|输出类型, 支持 `base64`、`blob`|`base64`|
+|resizable|是否可调整裁剪区大小|`true`|
 
 ## 事件
 |事件名|触发时机|参数|
