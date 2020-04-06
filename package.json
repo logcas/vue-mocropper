@@ -1,6 +1,6 @@
 {
   "name": "vue-mocropper",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Vue Image Cropper for mobile",
   "main": "./dist/mocropper.min.js",
   "scripts": {
