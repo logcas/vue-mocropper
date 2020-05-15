@@ -5,7 +5,7 @@ Vue 移动端图片裁剪插件
 本插件依赖 Alloyfinger 作为移动端手势操作库
 
 ## Demo
-[Live Demo--->](https://logcas.name/vue-mocropper)
+[Live Demo--->](https://logcas.github.io/vue-mocropper)
 
 ![Demo Gif](http://static-cdn.lxzmww.xyz/vue-mocropper-demo.gif)
 
