@@ -1,23 +1,24 @@
 # MoCropper
-Vue 移动端图片裁剪插件
+轻量级 Vue 移动端图片裁剪插件
 
 ## 依赖
 本插件依赖 Alloyfinger 作为移动端手势操作库
 
+📢 **!!2020/05/15：Alloyfinger 库已从插件中分离，请自行安装**
+
 ## Demo
 [Live Demo--->](https://logcas.github.io/vue-mocropper)
 
-![Demo Gif](http://static-cdn.lxzmww.xyz/vue-mocropper-demo.gif)
-
 ## 安装
 ```
-npm install vue-mocropper
+npm install vue-mocropper alloyfinger --save
 ```
 
 ## 使用
 1. 引入注册
 ```js
 import VueMoCropper from 'vue-mocropper';
+import 'vue-mocropper/dist/mocropper.min.css'; // ！！务必引入CSS
 Vue.use(VueMoCropper);
 ```
 
