@@ -52,5 +52,8 @@ module.exports = {
   },
   plugins: [
     new VueLoaderPlugin()
-  ]
+  ],
+  externals: {
+    'alloyfinger': 'AlloyFinger'
+  }
 }

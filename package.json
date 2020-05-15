@@ -25,9 +25,6 @@
   },
   "author": "Lucas <everlastlucas@outlook.com> (https://github.com/logcas)",
   "license": "MIT",
-  "dependencies": {
-    "alloyfinger": "^0.1.16"
-  },
   "devDependencies": {
     "@babel/core": "^7.9.0",
     "@babel/preset-env": "^7.9.0",
@@ -43,7 +40,8 @@
     "vue-template-compiler": "^2.6.11",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",
-    "webpack-dev-server": "^3.10.3"
+    "webpack-dev-server": "^3.10.3",
+    "alloyfinger": "^0.1.16"
   },
   "sideEffects": false
 }
