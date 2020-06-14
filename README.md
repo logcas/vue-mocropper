@@ -7,7 +7,11 @@
 📢 **!!2020/05/15：Alloyfinger 库已从插件中分离，请自行安装**
 
 ## Demo
+(请使用移动设备或Chrome移动设备模拟预览)
+
 [Live Demo--->](https://logcas.github.io/vue-mocropper)
+
+![二维码](https://cdn.jsdelivr.net/gh/logcas/ImageBed/vue-mocropper/qrcode.png)
 
 ## 安装
 ```
