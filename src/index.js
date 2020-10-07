@@ -1,13 +1,13 @@
 import MoCropper from './mocropper.vue';
 
 const VueMoCropper = {
-  install(Vue) {
-    Vue.component(MoCropper.name, MoCropper);
+  install(app) {
+    app.component(MoCropper.name, MoCropper);
   }
 };
 
 if (typeof window !== 'undefined' && window.Vue) {
-  window.Vue.use(VueMoCropper);
+  window.Vue.createApp({}).use(VueMoCropper);
 }
 
 export default VueMoCropper;

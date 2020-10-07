@@ -1,10 +1,10 @@
-const VueLoaderPlugin = require('vue-loader/lib/plugin')
+const { VueLoaderPlugin } = require('vue-loader');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   mode: 'development',
-  entry: path.join(__dirname, 'src', 'main.js'),
+  entry: path.join(__dirname, 'dev', 'main.js'),
   devServer: {
     port: 8888,
     contentBase: path.join(__dirname, 'dist'),
@@ -13,6 +13,11 @@ module.exports = {
   output: {
     path: path.join(__dirname, 'dist'),
     filename: '[name].js',
+  },
+  resolve: {
+    alias: {
+      'vue-mocropper': path.resolve(__dirname, 'src/index.js')
+    }
   },
   module: {
     rules: [
@@ -43,7 +48,7 @@ module.exports = {
   plugins: [
     new VueLoaderPlugin(),
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'src', 'template.html')
+      template: path.join(__dirname, 'dev', 'template.html')
     })
   ]
 }

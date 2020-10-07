@@ -436,9 +436,9 @@ export default {
         this.movingCropper = false;
       }
     });
-    this.$on('hook:beforeDestory', () => {
-      af = af.destory();
-    });
+    // this.$on('hook:beforeDestory', () => {
+    //   af = af.destory();
+    // });
     this._reset();
   }
 };
