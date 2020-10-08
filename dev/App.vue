@@ -16,7 +16,7 @@
     </div>
     <button @click="showCrop">Crop Image</button>
     <vue-mocropper 
-      :visible.sync="visible" 
+      v-model="visible" 
       :src="src" 
       @crop-done="handleCropDone"
       :crop-width="+cropWidth"
@@ -41,12 +41,11 @@ export default {
   data() {
         return {
           images: [
-            'http://static-cdn.lxzmww.xyz/onechat/image/1580397119505',
-            'http://static-cdn.lxzmww.xyz/onechat/image/1578291713117',
-            'http://static-cdn.lxzmww.xyz/beauty.jpg'
+            'http://img.mp.itc.cn/upload/20170419/e30e36a0fff842b687f0d842df20374b_th.jpg',
+            'http://5b0988e595225.cdn.sohucs.com/images/20190719/1f3ce15613b34bd1854052a29fef6ee3.jpeg'
           ],
           visible: false,
-          src: 'http://static-cdn.lxzmww.xyz/beauty.jpg',
+          src: '',
           croppedImage: '',
           cropWidth: 200,
           cropHeight: 200
