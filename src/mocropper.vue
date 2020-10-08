@@ -444,6 +444,7 @@ export default {
 };
 </script>
 
+
 <style lang="scss" scoped>
 .cutout {
   position: fixed;

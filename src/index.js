@@ -6,8 +6,4 @@ const VueMoCropper = {
   }
 };
 
-if (typeof window !== 'undefined' && window.Vue) {
-  window.Vue.createApp({}).use(VueMoCropper);
-}
-
 export default VueMoCropper;
