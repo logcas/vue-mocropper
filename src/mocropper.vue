@@ -1,5 +1,5 @@
 <template>
-  <div class="cutout" v-show="visible">
+  <div class="cutout" v-show="modelValue">
     <!--预览Canvas-->
     <canvas class="previewer" ref="pCanvas"></canvas>
 
@@ -54,7 +54,7 @@ export default {
   name: 'vue-mocropper',
   props: {
     // 显示隐藏控制
-    visible: {
+    modelValue: {
       type: Boolean,
       default: false
     },
@@ -142,7 +142,7 @@ export default {
     };
   },
   watch: {
-    visible(isShow) {
+    modelValue(isShow) {
       if (isShow) {
         this._reset();
         this._loadImage();
@@ -389,7 +389,7 @@ export default {
     },
     // 取消
     cancel() {
-      this.$emit('update:visible', false);
+      this.$emit('update:modelValue', false);
     }
   },
   mounted() {
