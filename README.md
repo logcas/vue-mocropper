@@ -1,8 +1,11 @@
 # MoCropper
-[WIP]轻量级 Vue3 移动端图片裁剪插件
+Vue.js 移动端图片裁剪插件，支持Vue2.0&Vue3.0
 
 ## 依赖
 本插件依赖 Alloyfinger 作为移动端手势操作库
+
+* Vue2的版本为v1.x
+* Vue3的版本为v2.x[WIP]
 
 ## Demo
 (请使用移动设备或Chrome移动设备模拟预览)
@@ -13,7 +16,11 @@
 
 ## 安装
 ```
-npm install vue-mocropper alloyfinger --save
+// vue2
+npm install vue-mocropper@1.0.0 alloyfinger --save
+
+// vue3
+npm install vue-mocropper@2.0.0 alloyfinger --save
 ```
 
 ## 使用
@@ -21,10 +28,27 @@ npm install vue-mocropper alloyfinger --save
 ```js
 import VueMoCropper from 'vue-mocropper';
 import 'vue-mocropper/dist/mocropper.min.css'; // ！！务必引入CSS
+
+// vue2
 Vue.use(VueMoCropper);
+
+// vue3
+Vue.createApp({}).use(VueMoCropper);
 ```
 
 2. 当组件使用
+vue2:
+```vue
+<vue-mocropper 
+  :visible.sync="visible" 
+  :src="src" 
+  @crop-done="handleCropDone"
+  :crop-width="200"
+  :crop-height="200"
+></vue-mocropper>
+```
+
+vue3:
 ```vue
 <vue-mocropper 
   v-model="visible" 
