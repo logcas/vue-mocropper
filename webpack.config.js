@@ -69,6 +69,7 @@ module.exports = {
     })
   ],
   externals: {
-    'alloyfinger': 'AlloyFinger'
+    'alloyfinger': 'AlloyFinger',
+    'vue': 'Vue'
   }
 }

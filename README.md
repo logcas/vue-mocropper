@@ -1,10 +1,8 @@
 # MoCropper
-轻量级 Vue 移动端图片裁剪插件
+[WIP]轻量级 Vue3 移动端图片裁剪插件
 
 ## 依赖
 本插件依赖 Alloyfinger 作为移动端手势操作库
-
-📢 **!!2020/05/15：Alloyfinger 库已从插件中分离，请自行安装**
 
 ## Demo
 (请使用移动设备或Chrome移动设备模拟预览)
@@ -29,7 +27,7 @@ Vue.use(VueMoCropper);
 2. 当组件使用
 ```vue
 <vue-mocropper 
-  :visible.sync="visible" 
+  v-model="visible" 
   :src="src" 
   @crop-done="handleCropDone"
   :crop-width="200"
@@ -41,7 +39,6 @@ Vue.use(VueMoCropper);
 |Prop|描述|默认值|
 |--|--|--|
 |src|图片的源地址||
-|visible|控制组件显隐|`false`|
 |cropWidth|裁剪区宽度, 单位为`px`|`200`|
 |cropHeight|裁剪区高度, 单位为`px`|`200`|
 |outputMime|输出的图像的Mime类型|`images/jpeg`|
